@@ -1,0 +1,31 @@
+name: Build downloadable assets
+on:
+  push:
+    branches: [main]
+    paths:
+      - "assets/*.b64"
+      - ".github/workflows/build-assets.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-assets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Decode website assets
+        run: |
+          mkdir -p downloads
+          base64 -d assets/ANI_20_AI_Service_Opportunities_CN.pdf.b64 > downloads/ANI_20_AI_Service_Opportunities_CN.pdf
+          base64 -d assets/og.jpg.b64 > og.jpg
+      - name: Publish decoded assets
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add downloads/ANI_20_AI_Service_Opportunities_CN.pdf og.jpg
+          if ! git diff --cached --quiet; then
+            git commit -m "Publish downloadable ANI assets"
+            git push
+          fi
